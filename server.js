@@ -4,7 +4,7 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 
-mongoose.connect("mongodb+srv://root:admin1234@cluster0-ghl8c.mongodb.net/tutorials?retryWrites=true",{useNewUrlParser:true}).then(()=>{
+mongoose.connect("mongodb+srv://root:admin1234@cluster0-ghl8c.mongodb.net/tutorials?retryWrites=true",{useNewUrlParser:true,useCreateIndex:true}).then(()=>{
 	console.log("connected to db");
 });
 

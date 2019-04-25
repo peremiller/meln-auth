@@ -27,6 +27,7 @@ router.post('/', async(req,res)=>{
 	user.password = hashed;
 
 	try{
+		// user = await user.markModified();
 		user = await user.save();
 		res.send(user);
 	}

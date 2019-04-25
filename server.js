@@ -1,3 +1,4 @@
+const auth = require('./routes/auth');
 const config = require('./config');
 const users = require('./routes/users');
 const express = require('express');
@@ -10,6 +11,7 @@ mongoose.connect("mongodb+srv://root:admin1234@cluster0-ghl8c.mongodb.net/tutori
 
 app.use(express.json());
 
+app.use('/api/auth', auth);
 app.use('/api/users', users);
 
 app.listen(config.port, ()=>{

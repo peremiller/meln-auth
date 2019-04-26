@@ -1,3 +1,5 @@
+const admin = require('../middlewares/admin');
+const auth = require('../middlewares/auth');
 const UserModel = require('../models/User');
 const express = require('express');
 const router = express.Router();
@@ -14,6 +16,7 @@ router.get('/', async (req,res)=>{
 // });
 
 router.post('/', async(req,res)=>{
+
 	if(!req.body.email) return res.status(400).send('Email is required');
 	if(!req.body.password) return res.status(400).send('Password is required');
 	let user = UserModel({
@@ -36,7 +39,10 @@ router.post('/', async(req,res)=>{
 	}
 });
 
-router.put('/:id', async (req,res)=>{
+router.put('/:id', auth, async (req,res)=>{
+
+	return res.send(req.user);
+
 	let user = await UserModel.findById(req.params.id);
 	user.name = req.body.name;
 	user.email = req.body.email;
@@ -51,7 +57,7 @@ router.put('/:id', async (req,res)=>{
 
 });
 
-router.delete('/:id', async (req,res)=>{
+router.delete('/:id', [auth,admin],async (req,res)=>{
 	let user = await UserModel.findByIdAndRemove(req.params.id);
 
 	res.send(user);

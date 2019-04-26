@@ -13,7 +13,7 @@ router.post('/', async (req,res) => {
 	let matched = await bcrypt.compare(req.body.password, user.password);
 	if(!matched) return res.status(400).send('Email or Password is incorrect');
 
-	const token = jwt.sign({ _id: user._id, name: user.name }, config.secret);
+	const token = jwt.sign({ _id: user._id, name: user.name, isAdmin: user.isAdmin }, config.secret);
 
 	res.header('x-auth-token',token).send(user);
 });

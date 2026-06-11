@@ -4,16 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --forceExit"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^3.0.0",
+    "bcrypt": "^6.0.0",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.5.3",
     "nodemon": "^1.18.11"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2"
   }
 }

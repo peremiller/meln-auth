@@ -15,7 +15,9 @@ router.post('/', async (req,res) => {
 
 	const token = jwt.sign({ _id: user._id, name: user.name, isAdmin: user.isAdmin }, config.secret);
 
-	res.header('x-auth-token',token).send(user);
+	const safeUser = typeof user.toObject === 'function' ? user.toObject() : { ...user };
+	delete safeUser.password;
+	res.header('x-auth-token',token).send(safeUser);
 });
 
 module.exports = router;

@@ -67,6 +67,17 @@ describe('POST /api/users', () => {
     expect(res.status).toBe(200);
   });
 
+  it('does not return the stored password hash after signup', async () => {
+    const savedUser = { _id: 'newid', email: 'carol@example.com', password: 'hashed_password' };
+    UserModel.mockImplementation(() => ({ save: jest.fn().mockResolvedValue(savedUser) }));
+
+    const res = await request(app).post('/api/users')
+      .send({ email: 'carol@example.com', password: 'password123' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.password).toBeUndefined();
+  });
+
   it('hashes the password with bcrypt before saving', async () => {
     UserModel.mockImplementation(() => ({
       save: jest.fn().mockResolvedValue({ _id: 'id', email: 'dave@example.com' }),

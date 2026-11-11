@@ -146,6 +146,18 @@ describe('DELETE /api/users/:id', () => {
     expect(res.status).toBe(403);
   });
 
+  it('does not disclose the deleted user password hash to an admin', async () => {
+    UserModel.findByIdAndRemove.mockResolvedValue({
+      _id: TARGET_ID, name: 'Eve', password: 'hashed_password',
+    });
+
+    const res = await request(app).delete(`/api/users/${TARGET_ID}`)
+      .set('x-auth-token', makeToken({ isAdmin: true }));
+
+    expect(res.status).toBe(200);
+    expect(res.body.password).toBeUndefined();
+  });
+
   it('deletes the user and returns 200 when called by an admin', async () => {
     UserModel.findByIdAndRemove.mockResolvedValue({ _id: TARGET_ID, name: 'Eve' });
 

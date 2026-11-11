@@ -61,8 +61,10 @@ router.put('/:id', auth, async (req,res)=>{
 
 router.delete('/:id', [auth,admin],async (req,res)=>{
 	let user = await UserModel.findByIdAndRemove(req.params.id);
-
-	res.send(user);
+	if (!user) return res.status(404).send('User not found');
+	const safeUser = typeof user.toObject === 'function' ? user.toObject() : { ...user };
+	delete safeUser.password;
+	res.send(safeUser);
 });
 
 module.exports = router;

@@ -55,6 +55,17 @@ describe('POST /api/auth', () => {
     expect(res.headers['x-auth-token']).toBeDefined();
   });
 
+  it('never sends the stored password hash in a successful login response', async () => {
+    UserModel.findOne.mockResolvedValue(MOCK_USER);
+    bcrypt.compare.mockResolvedValue(true);
+
+    const res = await request(app).post('/api/auth')
+      .send({ email: 'alice@example.com', password: 'password123' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.password).toBeUndefined();
+  });
+
   it('JWT payload contains _id, name, and isAdmin but not password', async () => {
     UserModel.findOne.mockResolvedValue(MOCK_USER);
     bcrypt.compare.mockResolvedValue(true);

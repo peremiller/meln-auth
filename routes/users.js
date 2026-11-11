@@ -32,7 +32,9 @@ router.post('/', async(req,res)=>{
 	try{
 		// user = await user.markModified();
 		user = await user.save();
-		res.send(user);
+		const safeUser = typeof user.toObject === 'function' ? user.toObject() : { ...user };
+		delete safeUser.password;
+		res.send(safeUser);
 	}
 	catch{
 		res.status(400).send("Provided data is invalid. Please send a valid data.");

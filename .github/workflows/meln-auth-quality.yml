@@ -1,0 +1,39 @@
+name: MELN Auth Quality
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'app.js'
+      - 'config.js'
+      - 'server.js'
+      - 'routes/**'
+      - 'middlewares/**'
+      - 'models/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/meln-auth-quality.yml'
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Run native backend regression tests
+        run: npm test -- --runInBand

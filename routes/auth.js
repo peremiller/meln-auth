@@ -6,11 +6,18 @@ const express = require('express');
 const router = express.Router();
 
 router.post('/', async (req,res) => {
-	let user = await UserModel.findOne({email:req.body.email});
+	// Fail with a consistent response before querying users or calling bcrypt.
+	const email = req.body && req.body.email;
+	const password = req.body && req.body.password;
+	if (typeof email !== 'string' || !email.trim() || typeof password !== 'string' || !password) {
+		return res.status(400).send('Email or Password is incorrect');
+	}
+
+	let user = await UserModel.findOne({email});
 
 	if(!user) return res.status(400).send('Email or Password is incorrect');
 
-	let matched = await bcrypt.compare(req.body.password, user.password);
+	let matched = await bcrypt.compare(password, user.password);
 	if(!matched) return res.status(400).send('Email or Password is incorrect');
 
 	const token = jwt.sign({ _id: user._id, name: user.name, isAdmin: user.isAdmin }, config.secret);

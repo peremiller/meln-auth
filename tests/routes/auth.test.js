@@ -22,6 +22,24 @@ beforeEach(() => {
 });
 
 describe('POST /api/auth', () => {
+  it('rejects missing or non-string credentials without looking up any user', async () => {
+    const invalid = [
+      {},
+      { email: 'alice@example.com' },
+      { password: 'pw' },
+      { email: null, password: 'pw' },
+      { email: 'alice@example.com', password: 123 },
+      { email: '   ', password: 'pw' },
+    ];
+    for (const payload of invalid) {
+      const res = await request(app).post('/api/auth').send(payload);
+      expect(res.status).toBe(400);
+      expect(res.text).toBe('Email or Password is incorrect');
+    }
+    expect(UserModel.findOne).not.toHaveBeenCalled();
+    expect(bcrypt.compare).not.toHaveBeenCalled();
+  });
+
   it('returns 400 when email is not found in the database', async () => {
     UserModel.findOne.mockResolvedValue(null);
 

@@ -5,7 +5,8 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 
-router.get('/', async (req,res)=>{
+// User-directory metadata is private. Keep email/password projection redaction as defense in depth.
+router.get('/', [auth, admin], async (req,res)=>{
 	let users = await UserModel.find().select('-password -email');
 	res.send(users);
 });

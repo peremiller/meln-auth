@@ -23,21 +23,45 @@ beforeEach(() => {
 // GET /api/users
 // ---------------------------------------------------------------------------
 describe('GET /api/users', () => {
-  it('returns 200 with a list of users', async () => {
+  it('rejects anonymous requests without accessing the user table', async () => {
+    const res = await request(app).get('/api/users');
+    expect(res.status).toBe(401);
+    expect(UserModel.find).not.toHaveBeenCalled();
+  });
+
+  it('rejects an invalid token without accessing the user table', async () => {
+    const res = await request(app).get('/api/users')
+      .set('x-auth-token', 'not-a-valid-jwt');
+    expect(res.status).toBe(400);
+    expect(UserModel.find).not.toHaveBeenCalled();
+  });
+
+  it('rejects signed non-admin users without accessing the user table', async () => {
+    const res = await request(app).get('/api/users')
+      .set('x-auth-token', makeToken({ isAdmin: false }));
+    expect(res.status).toBe(403);
+    expect(UserModel.find).not.toHaveBeenCalled();
+  });
+
+  it('returns the user directory to an authenticated administrator', async () => {
     UserModel.find.mockReturnValue({
       select: jest.fn().mockResolvedValue([{ _id: 'id1', name: 'Bob', isActive: true }]),
     });
 
-    const res = await request(app).get('/api/users');
+    const res = await request(app).get('/api/users')
+      .set('x-auth-token', makeToken({ isAdmin: true }));
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0].name).toBe('Bob');
   });
 
-  it('calls select("-password -email") to strip sensitive fields from the response', async () => {
+  it('excludes email and password from administrative directory queries', async () => {
     const selectMock = jest.fn().mockResolvedValue([]);
     UserModel.find.mockReturnValue({ select: selectMock });
 
-    await request(app).get('/api/users');
+    const res = await request(app).get('/api/users')
+      .set('x-auth-token', makeToken({ isAdmin: true }));
+    expect(res.status).toBe(200);
     expect(selectMock).toHaveBeenCalledWith('-password -email');
   });
 });

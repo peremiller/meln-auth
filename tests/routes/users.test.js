@@ -23,21 +23,43 @@ beforeEach(() => {
 // GET /api/users
 // ---------------------------------------------------------------------------
 describe('GET /api/users', () => {
-  it('returns 200 with a list of users', async () => {
+  it('rejects anonymous requests before querying the user database', async () => {
+    const res = await request(app).get('/api/users');
+    expect(res.status).toBe(401);
+    expect(UserModel.find).not.toHaveBeenCalled();
+  });
+
+  it('rejects authenticated non-admin requests before querying the user database', async () => {
+    const res = await request(app)
+      .get('/api/users')
+      .set('x-auth-token', makeToken({ isAdmin: false }));
+    expect(res.status).toBe(403);
+    expect(UserModel.find).not.toHaveBeenCalled();
+  });
+
+  it('rejects invalid authentication tokens without querying the user database', async () => {
+    const res = await request(app).get('/api/users').set('x-auth-token', 'invalid');
+    expect(res.status).toBe(400);
+    expect(UserModel.find).not.toHaveBeenCalled();
+  });
+
+  it('returns 200 with the user list to authenticated administrators', async () => {
     UserModel.find.mockReturnValue({
       select: jest.fn().mockResolvedValue([{ _id: 'id1', name: 'Bob', isActive: true }]),
     });
 
-    const res = await request(app).get('/api/users');
+    const res = await request(app)
+      .get('/api/users')
+      .set('x-auth-token', makeToken({ isAdmin: true }));
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  it('calls select("-password -email") to strip sensitive fields from the response', async () => {
+  it('strips password and email from admin user-directory results', async () => {
     const selectMock = jest.fn().mockResolvedValue([]);
     UserModel.find.mockReturnValue({ select: selectMock });
 
-    await request(app).get('/api/users');
+    await request(app).get('/api/users').set('x-auth-token', makeToken({ isAdmin: true }));
     expect(selectMock).toHaveBeenCalledWith('-password -email');
   });
 });
